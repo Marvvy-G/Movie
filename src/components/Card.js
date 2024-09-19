@@ -26,9 +26,9 @@ const Card = ({data,media_type }) => {
         {/* display movie title and overview */}
      
 
-        <div className='absolute bottom-0 h-20 backdrop-blur-3xl w-full  bg-black/60 p-2'>
+        <div className='absolute bottom-0 h-24 backdrop-blur-3xl w-full  bg-black/60 p-2'>
             <h2 className='text-ellipsis line-clamp-1 text-lg font-semibold'>{data?.title || data?.name}</h2>
-            <p className='text-sm'>{data.overview}</p>
+            <p className='text-ellipsis line-clamp-3 text-sm'>{data.overview}</p>
         </div>
     </Link>
   )
