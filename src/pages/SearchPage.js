@@ -1,42 +1,37 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Card from '../components/Card';
-
-const titleRegex = /^[a-zA-Z0-9\s,'-]{1,100}$/;
 
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
-  const [inputValue, setInputValue] = useState(location?.search?.slice(3) || '');
+  const [searchInput, setSearchInput] = useState(location?.search?.slice(3).replace('%20', ' ') || '');
   const [error, setError] = useState('');
 
-  const query = location?.search?.slice(3) || inputValue;
+  const query = searchInput;
+
+  // Regex for validating movie title (alphanumeric, spaces, and some special characters)
+  const isValidTitle = (title) => /^[a-zA-Z0-9\s]+$/.test(title);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(`search/multi`, {
-        params: {
-          query: query,
-          page: page
-        }
-      });
-      setData(prev => [...prev, ...response.data.results]);
+      if (isValidTitle(query)) {
+        const response = await axios.get(`search/multi`, {
+          params: {
+            query: query,
+            page: page,
+          },
+        });
+        setData((prev) => [...prev, ...response.data.results]);
+        setError(''); // Clear any previous error
+      } else {
+        setError('Invalid input. Please enter a valid movie title.');
+      }
     } catch (error) {
       console.log('error', error);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    if (titleRegex.test(value) || value === '') {
-      setInputValue(value);
-      setError('');
-      navigate(`/search?q=${value}`);
-    } else {
-      setError('Invalid search query. Please use alphanumeric characters only.');
     }
   };
 
@@ -46,7 +41,13 @@ const SearchPage = () => {
       setData([]);
       fetchData();
     }
-  }, [query]);
+  }, [location?.search]);
+
+  const handleScroll = () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      setPage((prev) => prev + 1);
+    }
+  };
 
   useEffect(() => {
     if (query) {
@@ -59,9 +60,22 @@ const SearchPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleScroll = () => {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-      setPage(prev => prev + 1);
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    if (isValidTitle(value)) {
+      setError('');
+    } else {
+      setError('Invalid input. Please enter a valid movie title.');
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isValidTitle(searchInput)) {
+      navigate(`/search?q=${searchInput}`);
+    } else {
+      setError('Invalid input. Please enter a valid movie title.');
     }
   };
 
@@ -71,20 +85,18 @@ const SearchPage = () => {
         <input
           type='text'
           placeholder='Search here...'
-          onChange={handleInputChange}
-          value={inputValue}
+          onChange={handleChange}
+          value={searchInput}
           className='px-4 py-1 text-lg w-full bg-white rounded-full text-neutral-900'
         />
-        {error && <p className='text-red-500 mt-2'>{error}</p>}
+        {error && <div className='text-red-500 mt-2'>{error}</div>}
       </div>
       <div className='container mx-auto'>
         <h3 className='capitalize text-lg lg:text-xl font-semibold my-3'>Search Results</h3>
         <div className='grid grid-cols-[repeat(auto-fit,230px)] gap-6 justify-center lg:justify-start'>
-          {
-            data.map((searchData) => (
-              <Card data={searchData} key={searchData.id + "search"} media_type={searchData.media_type} />
-            ))
-          }
+          {data.map((searchData) => (
+            <Card data={searchData} key={searchData.id + "search"} media_type={searchData.media_type} />
+          ))}
         </div>
       </div>
     </div>

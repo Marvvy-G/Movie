@@ -9,7 +9,7 @@ const titleRegex = /^[a-zA-Z0-9\s,'-]{1,100}$/;
 const Header = () => {
   const location = useLocation();
   const removeSpace = location?.search?.slice(3)?.split("%20")?.join(" ");
-  const [searchInput, setSearchInput] = useState(removeSpace);
+  const [searchInput, setSearchInput] = useState(removeSpace || '');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -17,6 +17,15 @@ const Header = () => {
     e.preventDefault();
     if (titleRegex.test(searchInput)) {
       navigate(`/search?q=${searchInput}`);
+      setError('');
+    } else {
+      setError('Invalid search input. Please use alphanumeric characters only.');
+    }
+  };
+
+  const handleChange = (e) => {
+    setSearchInput(e.target.value);
+    if (titleRegex.test(e.target.value)) {
       setError('');
     } else {
       setError('Invalid search input. Please use alphanumeric characters only.');
@@ -51,7 +60,7 @@ const Header = () => {
               type='text'
               placeholder='Search a Movie Title...'
               className='bg-transparent px-4 py-1 outline-none border-none hidden lg:block'
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={handleChange}
               value={searchInput}
             />
             <button className='text-2xl text-white' type='submit'>
