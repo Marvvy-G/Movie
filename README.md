@@ -1,6 +1,55 @@
-# Getting Started with Create React App
+## Movie Search Application
+## Overview
+The Movie Search Application is a React-based web app that enables users to search for movies by title and view search results. The application uses Redux for state management, employs regex for input validation, and integrates with an external API to fetch movie data. It also provides user feedback with error messages when invalid input is detected.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Features
+Search Movies: Users can search for movies by title.
+Dynamic Results: Results are displayed dynamically as the user types.
+Pagination: Automatically loads more results as the user scrolls down.
+Input Validation: Validates search input using regex to ensure it contains only alphanumeric characters and a limited number of special characters.
+Error Handling: Displays error messages if the input is invalid.
+## Technologies Used
+React: Frontend framework for building the user interface.
+Redux: State management library to handle application state.
+Axios: Library for making HTTP requests to fetch movie data.
+React Router: Library for handling routing and navigation.
+CSS: Styling for the application.
+Regex: Used for validating movie title inputs.
+## Getting Started
+Clone the Repository
+
+bash
+Copy code
+### `git clone <repository-url>`
+### `cd <repository-folder>`
+Install Dependencies
+
+bash
+Copy code
+### `npm install`
+Run the Application
+
+bash
+Copy code
+### `npm start`
+The app will be available at http://localhost:3000.
+
+## Components
+Header: Contains the search input field and navigation links.
+
+Input Validation: Ensures that the search input meets the regex criteria before allowing the form to submit.
+SearchPage: Displays the search results based on user input.
+
+Pagination: Fetches additional results as the user scrolls to the bottom of the page.
+## State Management
+Redux: Used to manage and centralize the state of the application. This includes storing search results and handling application state transitions.
+Input Validation
+Regex Validation: Ensures that the search input conforms to the expected format. The regex pattern /^[a-zA-Z0-9\s,'-]{1,100}$/ allows alphanumeric characters, spaces, commas, apostrophes, and hyphens, with a maximum length of 100 characters.
+## Error Handling
+Error Messages: If the input does not match the regex pattern, an error message is displayed to guide the user to correct their input.
+
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Available Scripts
 
