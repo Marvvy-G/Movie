@@ -6,7 +6,7 @@ import './App.css';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import MobileNav from './components/MobileNav';
-import { setBannerData, setImageURL } from './store/movieSlice';
+import { setBannerData, setImageURL } from './store/movieSlice';  
 
 function App() {
 

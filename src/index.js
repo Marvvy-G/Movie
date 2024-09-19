@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { RouterProvider } from 'react-router-dom';
 import router from './routes/index'; 
 import axios from 'axios';
-import { store } from './store/store'
+import store from './store/store';
 import { Provider } from 'react-redux'
 
 

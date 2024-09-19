@@ -4,6 +4,7 @@ import logo from '../assets/logooo.svg';
 import { IoSearchOutline } from 'react-icons/io5';
 import { navigation } from '../constants/navigation';
 
+//regex input validation
 const titleRegex = /^[a-zA-Z0-9\s,'-]{1,100}$/;
 
 const Header = () => {
@@ -12,6 +13,8 @@ const Header = () => {
   const [searchInput, setSearchInput] = useState(removeSpace || '');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  //ensuring that the input is valid
 
   const handleSubmit = (e) => {
     e.preventDefault();

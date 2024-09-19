@@ -90,7 +90,7 @@ const DetailsPage = () => {
           <h2 className="font-bold text-lg">Cast:</h2>
           <div className="grid grid-cols-[repeat(auto-fit,96px)] gap-5 my-4">
             {castData?.cast?.filter((el) => el?.profile_path)?.map((starCast, index) => (
-              <div key={starCast.id || index}> {/* Ensure unique key */}
+              <div key={starCast.id || index}> {/* To Ensure unique key */}
                 <div>
                   <img
                     src={imageURL + starCast?.profile_path}
