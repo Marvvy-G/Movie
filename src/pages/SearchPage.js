@@ -1,75 +1,86 @@
-
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchQuery, setSearchResults } from '../store/searchSlice';
 import Card from '../components/Card';
 
+// Debounce function to limit the rate of API calls
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
+
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // Access the search state from Redux
+  
   const { query, results } = useSelector((state) => state.search);
   const [page, setPage] = useState(1);
   const [error, setError] = useState('');
 
-  // Update search input from query in the Redux store
-  const searchInput = query;
-
   // Regex for validating movie title
   const isValidTitle = (title) => /^[a-zA-Z0-9\s]+$/.test(title);
 
-  const fetchData = async () => {
+  // Fetch data based on query and page
+  const fetchData = useCallback(async () => {
+    if (!query || !isValidTitle(query)) return;
+
     try {
-      if (isValidTitle(query)) {
-        const response = await axios.get(`search/multi`, {
-          params: {
-            query: query,
-            page: page,
-          },
-        });
-        dispatch(setSearchResults((prevResults) => [...prevResults, ...response.data.results]));
-        setError('');
-      } else {
-        setError('Invalid input. Please enter a valid movie title.');
-      }
+      console.log(`Fetching data with query: ${query} and page: ${page}`);
+      const response = await axios.get('/search/multi', {
+        params: { query, page },
+      });
+      dispatch(setSearchResults(response.data.results));
+      setError('');
     } catch (error) {
-      console.log('error', error);
+      console.error('Error fetching data:', error);
+      setError('Failed to fetch results. Please try again.');
     }
-  };
+  }, [query, page, dispatch]);
 
+  // Debounced fetchData
+  const debouncedFetchData = useCallback(debounce(fetchData, 300), [fetchData]);
+
+  // Update search based on URL query
   useEffect(() => {
-    if (query) {
-      setPage(1);
-      dispatch(setSearchResults([])); // Reset the results when query changes
-      fetchData();
-    }
-  }, [location?.search]);
+    const searchParams = new URLSearchParams(location.search);
+    const queryFromURL = searchParams.get('q');
 
-  const handleScroll = () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-      setPage((prev) => prev + 1);
+    if (queryFromURL && isValidTitle(queryFromURL)) {
+      setPage(1);  // Reset page on new search query
+      dispatch(setSearchQuery(queryFromURL));  // Update Redux state
+      dispatch(setSearchResults([]));  // Clear previous results
+      debouncedFetchData();  // Fetch new results
     }
-  };
+  }, [location.search, dispatch, debouncedFetchData]);
 
+  // Handle infinite scroll for pagination
   useEffect(() => {
-    if (query) {
-      fetchData();
-    }
-  }, [page]);
-
-  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fetch more results when the page changes
+  useEffect(() => {
+    if (query) {
+      debouncedFetchData();  // Fetch results for the new page
+    }
+  }, [page, query, debouncedFetchData]);
+
+  // Handle search input change
   const handleChange = (e) => {
     const value = e.target.value;
-    dispatch(setSearchQuery(value));
+    dispatch(setSearchQuery(value));  // Update Redux state
     if (isValidTitle(value)) {
       setError('');
     } else {
@@ -77,12 +88,14 @@ const SearchPage = () => {
     }
   };
 
+  // Handle form submit for search
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (isValidTitle(searchInput)) {
-      navigate(`/search?q=${searchInput}`);
+    if (isValidTitle(query)) {
+      navigate(`/search?q=${query}`);
+      setError('');
     } else {
-      setError('Invalid input. Please enter a valid movie title.');
+      setError('Invalid search input. Please use alphanumeric characters only.');
     }
   };
 
@@ -91,19 +104,23 @@ const SearchPage = () => {
       <div className="lg:hidden my-2 mx-1 sticky top-[70px] z-30">
         <input
           type="text"
-          placeholder="Search here..."
+          placeholder="Search movie title..."
           onChange={handleChange}
-          value={searchInput}
+          value={query}
           className="px-4 py-1 text-lg w-full bg-white rounded-full text-neutral-900"
         />
         {error && <div className="text-red-500 mt-2">{error}</div>}
       </div>
-      <div className="container mx-auto">
-        <h3 className="capitalize text-lg lg:text-xl font-semibold my-3">Search Results</h3>
-        <div className="grid grid-cols-[repeat(auto-fit,230px)] gap-6 justify-center lg:justify-start">
-          {results.map((searchData) => (
-            <Card data={searchData} key={searchData.id + "search"} media_type={searchData.media_type} />
-          ))}
+      <div className="container mx-auto px-4">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold my-3">Search Results</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {Array.isArray(results) && results.length > 0 ? (
+            results.map((searchData) => (
+              <Card data={searchData} key={searchData.id} media_type={searchData.media_type} />
+            ))
+          ) : (
+            <div className="col-span-full text-center">No results found</div>
+          )}
         </div>
       </div>
     </div>
@@ -111,4 +128,3 @@ const SearchPage = () => {
 };
 
 export default SearchPage;
-
