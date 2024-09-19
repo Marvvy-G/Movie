@@ -1,17 +1,25 @@
-import React, {useState} from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logooo.svg';
 import { IoSearchOutline } from 'react-icons/io5';
 import { navigation } from '../constants/navigation';
 
+const titleRegex = /^[a-zA-Z0-9\s,'-]{1,100}$/;
+
 const Header = () => {
-  const [searchInput, setSearchInput] = useState('');
+  const location = useLocation();
+  const removeSpace = location?.search?.slice(3)?.split("%20")?.join(" ");
+  const [searchInput, setSearchInput] = useState(removeSpace);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (searchInput) {
+    if (titleRegex.test(searchInput)) {
       navigate(`/search?q=${searchInput}`);
+      setError('');
+    } else {
+      setError('Invalid search input. Please use alphanumeric characters only.');
     }
   };
 
@@ -28,7 +36,7 @@ const Header = () => {
         <nav className='flex items-center ml-4'>
           {navigation.map((nav, index) => (
             <div key={index}>
-              <NavLink to={nav.href} className={({ isActive }) => 
+              <NavLink to={nav.href} className={({ isActive }) =>
                 `px-2 hover:text-neutral-100 ${isActive ? 'text-neutral-100' : ''}`
               }>
                 {nav.label}
@@ -39,7 +47,7 @@ const Header = () => {
 
         <div className='ml-auto flex items-center gap-5'>
           <form className='flex items-center gap-2' onSubmit={handleSubmit}>
-            <input 
+            <input
               type='text'
               placeholder='Search a Movie Title...'
               className='bg-transparent px-4 py-1 outline-none border-none hidden lg:block'
@@ -47,9 +55,10 @@ const Header = () => {
               value={searchInput}
             />
             <button className='text-2xl text-white' type='submit'>
-              <IoSearchOutline/>
+              <IoSearchOutline />
             </button>
           </form>
+          {error && <p className='text-red-500'>{error}</p>}
         </div>
       </div>
     </header>
