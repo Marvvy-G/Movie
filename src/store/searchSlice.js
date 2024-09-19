@@ -19,7 +19,7 @@ const searchSlice = createSlice({
     resetSearchResults(state) {
       state.results = [];
     },
-    setError(state, action) { // New reducer for handling errors
+    setError(state, action) { 
       state.error = action.payload;
     },
   },
